@@ -1,6 +1,12 @@
 {
+  "name": "email-verification-netlify",
+  "version": "1.0.0",
+  "description": "Email verification system using Netlify Functions and MailTrap",
   "dependencies": {
-    "mailtrap": "^4.2.0",
-    "resend": "^6.0.2"
+    "mailtrap": "^4.2.0"
+  },
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'Build complete'"
   }
 }
