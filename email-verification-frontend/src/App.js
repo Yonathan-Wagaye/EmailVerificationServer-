@@ -2,8 +2,8 @@
 import React, { useMemo, useState, useEffect } from "react";
 import "./App.css";
 
-// Use environment variable for API URL, fallback to Netlify Functions
-const API_BASE = process.env.REACT_APP_API_BASE || "https://verifyemailserver.netlify.app/.netlify/functions";
+// Use Netlify Functions API
+const API_BASE = "https://verifyemailserver.netlify.app/.netlify/functions";
 
 function maskEmail(e) {
   if (!e || !e.includes("@")) return e || "";
