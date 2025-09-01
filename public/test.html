@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            color: #007cba;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Email Verification Test</h1>
+    <p>Test your Netlify Functions email verification system</p>
+
+    <div class="form-group">
+        <label for="email">Email Address:</label>
+        <input type="email" id="email" placeholder="test@example.com" value="test@example.com">
+    </div>
+
+    <div class="form-group">
+        <label for="code">Verification Code:</label>
+        <input type="text" id="code" placeholder="123456" maxlength="6">
+    </div>
+
+    <button onclick="sendCode()" id="sendBtn">Send Code</button>
+    <button onclick="verifyCode()" id="verifyBtn">Verify Code</button>
+
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = window.location.origin + '/.netlify/functions';
+        
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+            resultDiv.innerHTML = message;
+        }
+
+        function showLoading(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result loading';
+            resultDiv.innerHTML = message;
+        }
+
+        async function sendCode() {
+            const email = document.getElementById('email').value;
+            const sendBtn = document.getElementById('sendBtn');
+            
+            if (!email) {
+                showResult('Please enter an email address', true);
+                return;
+            }
+
+            sendBtn.disabled = true;
+            showLoading('Sending verification code...');
+
+            try {
+                const response = await fetch(`${API_BASE}/send-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult('✅ Code sent successfully! Check your email.');
+                } else {
+                    showResult(`❌ Error: ${data.error || 'Failed to send code'}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, true);
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function verifyCode() {
+            const email = document.getElementById('email').value;
+            const code = document.getElementById('code').value;
+            const verifyBtn = document.getElementById('verifyBtn');
+            
+            if (!email || !code) {
+                showResult('Please enter both email and code', true);
+                return;
+            }
+
+            if (code.length !== 6) {
+                showResult('Code must be 6 digits', true);
+                return;
+            }
+
+            verifyBtn.disabled = true;
+            showLoading('Verifying code...');
+
+            try {
+                const response = await fetch(`${API_BASE}/verify-code`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, code })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.verified) {
+                    showResult('🎉 Code verified successfully!');
+                } else {
+                    showResult(`❌ ${data.message || 'Invalid or expired code'}`, true);
+                }
+            } catch (error) {
+                showResult(`❌ Network error: ${error.message}`, true);
+            } finally {
+                verifyBtn.disabled = false;
+            }
+        }
+
+        // Auto-fill with test data
+        document.getElementById('email').value = 'test@example.com';
+        document.getElementById('code').value = '123456';
+    </script>
+</body>
+</html>
